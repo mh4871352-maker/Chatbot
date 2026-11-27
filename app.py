@@ -70,7 +70,7 @@ if q:
     save("user", q)
     if q.strip().startswith("ارسم"):
         desc = q.strip()[4:].strip() or "a beautiful landscape"
-        url = "https://image.pollinations.ai/prompt/" + urllib.parse.quote(desc) + "?width=768&height=768&nologo=true"
+        url = "https://image.pollinations.ai/prompt/" + urllib.parse.quote(desc) + "?width=768&height=768&nologo=true&seed=" + str(int(time.time()))
         st.session_state.msgs.append({"role": "assistant", "text": "IMG:" + url})
         save("assistant", "IMG:" + url)
         st.rerun()
@@ -80,18 +80,14 @@ if q:
     answer = "الخدمة مزدحمة دلوقتي، جرب كمان شوية."
     for i in range(4):
         try:
-            if i < 2:
-                cfg = types.GenerateContentConfig(system_instruction=rules, tools=[types.Tool(google_search=types.GoogleSearch())])
-            else:
-                cfg = types.GenerateContentConfig(system_instruction=rules)
             r = st.session_state.client.models.generate_content(
-                model="gemini-3.8-flash",
+                model="gemini-3.5-flash-lite",
                 contents=hist,
-                config=cfg)
+                config=types.GenerateContentConfig(system_instruction=rules))
             answer = r.text
             break
         except Exception:
-            time.sleep(2)
+            time.sleep(3)
     st.session_state.msgs.append({"role": "assistant", "text": answer})
     save("assistant", answer)
     st.rerun()
