@@ -1,4 +1,3 @@
-
 import time
 import hashlib
 import requests
@@ -81,14 +80,18 @@ if q:
     answer = "الخدمة مزدحمة دلوقتي، جرب كمان شوية."
     for i in range(4):
         try:
+            if i < 2:
+                cfg = types.GenerateContentConfig(system_instruction=rules, tools=[types.Tool(google_search=types.GoogleSearch())])
+            else:
+                cfg = types.GenerateContentConfig(system_instruction=rules)
             r = st.session_state.client.models.generate_content(
                 model="gemini-3.5-flash-lite",
                 contents=hist,
-                config=types.GenerateContentConfig(system_instruction=rules, tools=[types.Tool(google_search=types.GoogleSearch())]))
+                config=cfg)
             answer = r.text
             break
         except Exception:
-            time.sleep(3)
+            time.sleep(2)
     st.session_state.msgs.append({"role": "assistant", "text": answer})
     save("assistant", answer)
     st.rerun()
