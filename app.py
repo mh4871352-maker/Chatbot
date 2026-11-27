@@ -2,6 +2,7 @@
 import time
 import hashlib
 import requests
+import urllib.parse
 import streamlit as st
 from google import genai
 from google.genai import types
@@ -51,7 +52,10 @@ st.title("Chatbot")
 
 for m in st.session_state.msgs:
     with st.chat_message(m["role"]):
-        st.write(m["text"])
+        if m["text"].startswith("IMG:"):
+            st.image(m["text"][4:])
+        else:
+            st.write(m["text"])
 
 q = st.chat_input("اكتب هنا")
 if q:
@@ -65,9 +69,15 @@ if q:
         st.rerun()
     st.session_state.msgs.append({"role": "user", "text": q})
     save("user", q)
+    if q.strip().startswith("ارسم"):
+        desc = q.strip()[4:].strip() or "a beautiful landscape"
+        url = "https://image.pollinations.ai/prompt/" + urllib.parse.quote(desc) + "?width=768&height=768&nologo=true"
+        st.session_state.msgs.append({"role": "assistant", "text": "IMG:" + url})
+        save("assistant", "IMG:" + url)
+        st.rerun()
     rules = BOSS_RULES if st.session_state.boss else GUEST_RULES
     hist = [types.Content(role="user" if m["role"] == "user" else "model",
-            parts=[types.Part(text=m["text"])]) for m in st.session_state.msgs]
+            parts=[types.Part(text="[صورة]" if m["text"].startswith("IMG:") else m["text"])]) for m in st.session_state.msgs]
     answer = "الخدمة مزدحمة دلوقتي، جرب كمان شوية."
     for i in range(4):
         try:
