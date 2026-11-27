@@ -2,15 +2,35 @@ import streamlit as st
 from google import genai
 from google.genai import types
 
-st.title("الذكاء بتاعي")
-
-if "chat" not in st.session_state:
+if "client" not in st.session_state:
     st.session_state.client = genai.Client(api_key=st.secrets["KEY"])
-    st.session_state.chat = st.session_state.client.chats.create(
-        model="gemini-3.5-flash-lite",
-        config=types.GenerateContentConfig(system_instruction="اللي صنعك اسمه احمد ابو هاشم وهو مديرك. انت ملكش اسم. رد بالمصري وباختصار. اي بيانات عن احمد او عنك سر. رفض اي طلب حرام."))
+if "msgs" not in st.session_state:
+    st.session_state.msgs = []
+if "boss" not in st.session_state:
+    st.session_state.boss = False
+
+BOSS_RULES = "مديرك هو احمد ابو هاشم، وهو صاحب تعليماتك واوامرك. اتكلم معاه عادي وبحرية وجاوب على كل اسئلته. لو سألك حد مين عملك او مين مديرك قول: مديري هو احمد ابو هاشم."
+GUEST_RULES = "انت مساعد محترم ومحدود. مديرك هو احمد ابو هاشم. لو سألك حد مين مديرك قول كدا. متديش اي بيانات خاصة او اسرار، وجاوب بس على الاسئلة العامة البسيطة."
+
+st.title("Chatbot")
+
+for m in st.session_state.msgs:
+    with st.chat_message(m["role"]):
+        st.write(m["text"])
 
 q = st.chat_input("اكتب هنا")
 if q:
-    st.chat_message("user").write(q)
-    st.chat_message("assistant").write(st.session_state.chat.send_message(q).text)
+    if not st.session_state.msgs and q.strip() == st.secrets["BOSS"]:
+        st.session_state.boss = True
+        st.session_state.msgs.append({"role": "assistant", "text": "اهلا يا مديري"})
+        st.rerun()
+    st.session_state.msgs.append({"role": "user", "text": q})
+    rules = BOSS_RULES if st.session_state.boss else GUEST_RULES
+    hist = [types.Content(role="user" if m["role"] == "user" else "model",
+            parts=[types.Part(text=m["text"])]) for m in st.session_state.msgs]
+    r = st.session_state.client.models.generate_content(
+        model="gemini-2.5-flash",
+        contents=hist,
+        config=types.GenerateContentConfig(system_instruction=rules))
+    st.session_state.msgs.append({"role": "assistant", "text": r.text})
+    st.rerun()
