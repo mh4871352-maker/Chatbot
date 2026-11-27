@@ -1,3 +1,4 @@
+import time
 import streamlit as st
 from google import genai
 from google.genai import types
@@ -28,12 +29,16 @@ if q:
     rules = BOSS_RULES if st.session_state.boss else GUEST_RULES
     hist = [types.Content(role="user" if m["role"] == "user" else "model",
             parts=[types.Part(text=m["text"])]) for m in st.session_state.msgs]
-    try:
-        r = st.session_state.client.models.generate_content(
-            model="gemini-3.8-flash",
-            contents=hist,
-            config=types.GenerateContentConfig(system_instruction=rules))
-        st.session_state.msgs.append({"role": "assistant", "text": r.text})
-    except Exception as e:
-        st.session_state.msgs.append({"role": "assistant", "text": "خطأ: " + str(e)[:200]})
+    answer = "الخدمة مزدحمة دلوقتي، جرب كمان شوية."
+    for model in ["gemini-3.8-flash", "gemini-3.8-flash", "gemini-3.8-flash", "gemini-3.8-flash"]:
+        try:
+            r = st.session_state.client.models.generate_content(
+                model=model,
+                contents=hist,
+                config=types.GenerateContentConfig(system_instruction=rules))
+            answer = r.text
+            break
+        except Exception:
+            time.sleep(3)
+    st.session_state.msgs.append({"role": "assistant", "text": answer})
     st.rerun()
