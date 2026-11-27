@@ -85,7 +85,7 @@ if q:
             else:
                 cfg = types.GenerateContentConfig(system_instruction=rules)
             r = st.session_state.client.models.generate_content(
-                model="gemini-3.5-flash-lite",
+                model="gemini-3.8-flash",
                 contents=hist,
                 config=cfg)
             answer = r.text
