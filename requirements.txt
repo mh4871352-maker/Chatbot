@@ -1,1 +1,2 @@
 google_genai
+streamlit-cookies-controller
