@@ -74,7 +74,7 @@ if q:
             r = st.session_state.client.models.generate_content(
                 model="gemini-3.5-flash-lite",
                 contents=hist,
-                config=types.GenerateContentConfig(system_instruction=rules))
+                config=types.GenerateContentConfig(system_instruction=rules, tools=[types.Tool(google_search=types.GoogleSearch())]))
             answer = r.text
             break
         except Exception:
