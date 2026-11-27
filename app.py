@@ -30,7 +30,7 @@ if q:
             parts=[types.Part(text=m["text"])]) for m in st.session_state.msgs]
     try:
         r = st.session_state.client.models.generate_content(
-            model="gemini-2.5-flash",
+            model="gemini-3.8-flash",
             contents=hist,
             config=types.GenerateContentConfig(system_instruction=rules))
         st.session_state.msgs.append({"role": "assistant", "text": r.text})
