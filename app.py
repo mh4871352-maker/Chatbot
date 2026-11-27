@@ -30,10 +30,10 @@ if q:
     hist = [types.Content(role="user" if m["role"] == "user" else "model",
             parts=[types.Part(text=m["text"])]) for m in st.session_state.msgs]
     answer = "الخدمة مزدحمة دلوقتي، جرب كمان شوية."
-    for model in ["gemini-3.8-flash", "gemini-3.8-flash", "gemini-3.8-flash", "gemini-3.8-flash"]:
+    for i in range(4):
         try:
             r = st.session_state.client.models.generate_content(
-                model=model,
+                model="gemini-3.5-flash-lite",
                 contents=hist,
                 config=types.GenerateContentConfig(system_instruction=rules))
             answer = r.text
