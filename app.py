@@ -28,9 +28,12 @@ if q:
     rules = BOSS_RULES if st.session_state.boss else GUEST_RULES
     hist = [types.Content(role="user" if m["role"] == "user" else "model",
             parts=[types.Part(text=m["text"])]) for m in st.session_state.msgs]
-    r = st.session_state.client.models.generate_content(
-        model="gemini-2.5-flash",
-        contents=hist,
-        config=types.GenerateContentConfig(system_instruction=rules))
-    st.session_state.msgs.append({"role": "assistant", "text": r.text})
+    try:
+        r = st.session_state.client.models.generate_content(
+            model="gemini-flash-latest",
+            contents=hist,
+            config=types.GenerateContentConfig(system_instruction=rules))
+        st.session_state.msgs.append({"role": "assistant", "text": r.text})
+    except Exception as e:
+        st.session_state.msgs.append({"role": "assistant", "text": "خطأ: " + str(e)[:200]})
     st.rerun()
